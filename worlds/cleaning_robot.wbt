@@ -9,8 +9,8 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/project
 WorldInfo {
 }
 Viewpoint {
-  orientation -0.5609743781750932 0.5553926453941913 0.6138784541528635 2.0493709108841407
-  position 0.42385505311103944 -1.3296858777456606 13.683193511710048
+  orientation -0.5598892240982135 0.557793715156222 0.6126909727349669 2.0455378773131456
+  position 0.09550627201948458 -1.0742581518273013 10.428076786860066
 }
 TexturedBackground {
 }
@@ -25,21 +25,45 @@ DEF ROVER_S E-puck {
   hidden position_0_1 6726.965357898766
   hidden rotation_1 0 1 0 4.734215601172407
   hidden rotation_2 0 1 0 3.957079216608812
+  translation -1.75 -1.75 0
   rotation -0.012982329546031733 -0.010201437270277116 -0.9998636856077826 0.12470459173544354
   name "rover_s"
   controller "rover_controller"
   supervisor TRUE
 }
 WoodenBox {
-  translation 1 0 0.3
+  translation 1.2 1.1 0.15
+  name "sofa obstacle"
+  size 1 0.35 0.3
 }
 WoodenBox {
-  translation 1.5 1.5 0.15
-  name "wooden box(1)"
-  size 0.4 0.4 0.3
+  translation 0.25 -0.15 0.15
+  name "table obstacle"
+  size 0.45 0.45 0.3
 }
 WoodenBox {
-  translation 1.8 1 0.15
-  name "wooden box(2)"
-  size 0.25 0.6 0.3
+  translation 1.65 -0.85 0.15
+  name "cabinet obstacle"
+  size 0.35 0.9 0.3
+}
+WoodenBox {
+  translation -0.75 0.95 0.15
+  name "small wall divider"
+  size 0.25 1 0.3
+}
+DEF HOME_BASE Solid {
+  translation -1.75 -1.75 0.04
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.05 0.25 0.9
+        roughness 0.6
+        metalness 0
+      }
+      geometry Box {
+        size 0.5 0.5 0.08
+      }
+    }
+  ]
+  name "home charging base"
 }
