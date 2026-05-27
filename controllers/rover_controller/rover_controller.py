@@ -131,7 +131,7 @@ def main():
         print("[Rover-S] No RectangleArena found; defaulting to 5.0x5.0 m room.")
     size_x, size_y = arena
     grid = CoverageGrid(robot, size_x=size_x, size_y=size_y,
-                        cell_size=0.25, cleaning_radius=0.20)
+                        cell_size=0.25, cleaning_radius=0.08)
     print(f"[Rover-S] Arena {size_x:.1f}x{size_y:.1f} m -> grid "
           f"{grid.n_cols}x{grid.n_rows} (cell ~{grid.cell_x:.2f} m).")
 

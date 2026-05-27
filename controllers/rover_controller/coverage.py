@@ -103,49 +103,80 @@ class CoverageGrid:
     # ---- marking cells ----
     def mark_visited(self, x, y):
         """
-        Mark cleaned cells around the robot. Two things happen each call:
+        Mark cells as cleaned using a virtual circular brush under the robot.
 
-        1. The cell containing (x, y) is ALWAYS marked - the robot occupied it,
-           so it counts as cleaned regardless of cleaning_radius. This is the
-           guarantee that the robot's own footprint never gets "missed" just
-           because the cell centre happens to be more than cleaning_radius
-           away (a cell half-diagonal can exceed a small radius).
-        2. Any other UNVISITED cell whose centre lies within cleaning_radius of
-           (x, y) is also marked. Models the robot as a circular cleaning
-           sweep, so cells right next to obstacles get cleaned as the robot
-           passes by without having to enter the cell's exact centre.
+        This is more realistic than instantly cleaning the cell that the robot
+        touches. A cell only becomes VISITED when enough of that cell has been
+        covered by the cleaning brush.
 
-        Returns (newly_cleaned, coverage_fraction); newly_cleaned is the count
-        of cells just cleaned this call.
+        Returns:
+            newly_cleaned: number of new cells cleaned this step
+            coverage_fraction: current coverage percentage as a fraction
         """
         newly = 0
 
-        # (1) Always mark the cell the robot is currently in.
-        i0, j0 = self.world_to_grid(x, y)
-        if self.cells[i0][j0] == UNVISITED:
-            self.cells[i0][j0] = VISITED
-            self.visited_count += 1
-            self._spawn_tile(i0, j0, VISITED)
-            newly += 1
+        # Lazy setup: stores how much cleaning coverage each cell has received.
+        # This avoids needing to edit __init__ for this first upgrade.
+        if not hasattr(self, "cleaning_progress"):
+            self.cleaning_progress = {}
 
-        # (2) Sweep any other cells whose centres are within cleaning_radius.
-        r = self.cleaning_radius
-        if r > 0.0:
-            i_min, j_min = self.world_to_grid(x - r, y - r)
-            i_max, j_max = self.world_to_grid(x + r, y + r)
-            r2 = r * r
-            for i in range(i_min, i_max + 1):
-                for j in range(j_min, j_max + 1):
-                    if (i, j) == (i0, j0):
-                        continue
-                    if self.cells[i][j] != UNVISITED:
-                        continue
-                    cx, cy = self.grid_to_world(i, j)
-                    if (cx - x) ** 2 + (cy - y) ** 2 <= r2:
-                        self.cells[i][j] = VISITED
-                        self.visited_count += 1
-                        self._spawn_tile(i, j, VISITED)
-                        newly += 1
+        brush_radius = self.cleaning_radius
+
+        # How much of a cell must be covered before it counts as cleaned.
+        # 0.35 means roughly 35% of the sampled cell area.
+        required_cell_coverage = 1.0
+
+        # Check only nearby cells, not the whole grid.
+        i_min, j_min = self.world_to_grid(x - brush_radius, y - brush_radius)
+        i_max, j_max = self.world_to_grid(x + brush_radius, y + brush_radius)
+
+        for i in range(i_min, i_max + 1):
+            for j in range(j_min, j_max + 1):
+
+                if self.cells[i][j] != UNVISITED:
+                    continue
+
+                cell_centre_x, cell_centre_y = self.grid_to_world(i, j)
+
+                # Sample 9 points inside the square cell.
+                # More points inside the brush circle = more of the cell cleaned.
+                sample_points = [
+                    (cell_centre_x, cell_centre_y),
+                    (cell_centre_x - self.cell_x * 0.25, cell_centre_y),
+                    (cell_centre_x + self.cell_x * 0.25, cell_centre_y),
+                    (cell_centre_x, cell_centre_y - self.cell_y * 0.25),
+                    (cell_centre_x, cell_centre_y + self.cell_y * 0.25),
+                    (cell_centre_x - self.cell_x * 0.25, cell_centre_y - self.cell_y * 0.25),
+                    (cell_centre_x - self.cell_x * 0.25, cell_centre_y + self.cell_y * 0.25),
+                    (cell_centre_x + self.cell_x * 0.25, cell_centre_y - self.cell_y * 0.25),
+                    (cell_centre_x + self.cell_x * 0.25, cell_centre_y + self.cell_y * 0.25),
+                ]
+
+                points_inside_brush = 0
+
+                for px, py in sample_points:
+                    distance_squared = (px - x) ** 2 + (py - y) ** 2
+                    if distance_squared <= brush_radius ** 2:
+                        points_inside_brush += 1
+
+                coverage_this_step = points_inside_brush / len(sample_points)
+
+                if coverage_this_step <= 0:
+                    continue
+
+                key = (i, j)
+
+                if key not in self.cleaning_progress:
+                    self.cleaning_progress[key] = 0.0
+
+                self.cleaning_progress[key] += coverage_this_step * 0.03
+
+                if self.cleaning_progress[key] >= required_cell_coverage:
+                    self.cells[i][j] = VISITED
+                    self.visited_count += 1
+                    self._spawn_tile(i, j, VISITED)
+                    newly += 1
+
         return newly, self.coverage()
 
     def mark_blocked(self, i, j):
