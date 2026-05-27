@@ -1,0 +1,45 @@
+#VRML_SIM R2025a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/robots/gctronic/e-puck/protos/E-puck.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/factory/containers/protos/WoodenBox.proto"
+
+WorldInfo {
+}
+Viewpoint {
+  orientation -0.5609743781750932 0.5553926453941913 0.6138784541528635 2.0493709108841407
+  position 0.42385505311103944 -1.3296858777456606 13.683193511710048
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+RectangleArena {
+  floorSize 5 5
+  wallHeight 0.3
+}
+DEF ROVER_S E-puck {
+  hidden position_0_0 6602.078788139738
+  hidden position_0_1 6726.965357898766
+  hidden rotation_1 0 1 0 4.734215601172407
+  hidden rotation_2 0 1 0 3.957079216608812
+  rotation -0.012982329546031733 -0.010201437270277116 -0.9998636856077826 0.12470459173544354
+  name "rover_s"
+  controller "rover_controller"
+  supervisor TRUE
+}
+WoodenBox {
+  translation 1 0 0.3
+}
+WoodenBox {
+  translation 1.5 1.5 0.15
+  name "wooden box(1)"
+  size 0.4 0.4 0.3
+}
+WoodenBox {
+  translation 1.8 1 0.15
+  name "wooden box(2)"
+  size 0.25 0.6 0.3
+}
